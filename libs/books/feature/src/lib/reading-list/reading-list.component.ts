@@ -1,12 +1,16 @@
 import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { getReadingList, removeFromReadingList } from '@tmo/books/data-access';
+import {
+  getReadingList,
+  removeFromReadingList,
+  markBookAsRead,
+} from '@tmo/books/data-access';
 import { ReadingListItem } from '@tmo/shared/models';
 
 @Component({
   selector: 'tmo-reading-list',
   templateUrl: './reading-list.component.html',
-  styleUrls: ['./reading-list.component.scss']
+  styleUrls: ['./reading-list.component.scss'],
 })
 export class ReadingListComponent {
   readingList$ = this.store.select(getReadingList);
@@ -15,5 +19,17 @@ export class ReadingListComponent {
 
   removeFromReadingList(item: ReadingListItem) {
     this.store.dispatch(removeFromReadingList({ item }));
+  }
+
+  markBookAsRead(item: ReadingListItem) {
+    this.store.dispatch(
+      markBookAsRead({
+        item: {
+          ...item,
+          finished: true,
+          finishedDate: new Date().toISOString(),
+        },
+      })
+    );
   }
 }
