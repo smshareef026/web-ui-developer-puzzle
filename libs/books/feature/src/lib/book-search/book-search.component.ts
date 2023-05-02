@@ -1,5 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Component, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import {
   addToReadingList,
@@ -10,20 +9,14 @@ import {
 } from '@tmo/books/data-access';
 import { FormBuilder } from '@angular/forms';
 import { Book } from '@tmo/shared/models';
-import { Subject, Subscription } from 'rxjs';
 
 @Component({
   selector: 'tmo-book-search',
   templateUrl: './book-search.component.html',
   styleUrls: ['./book-search.component.scss'],
 })
-export class BookSearchComponent implements OnInit, OnDestroy {
+export class BookSearchComponent {
   books$ = this.store.pipe(select(getAllBooks));
-  private destroyed$ = new Subject();
-  /*
-    Creating a suscription for Instant Search value Changes
-  */
-  instantSearchSubscription: Subscription;
   searchForm = this.fb.group({
     term: '',
   });
@@ -32,28 +25,6 @@ export class BookSearchComponent implements OnInit, OnDestroy {
     private readonly store: Store,
     private readonly fb: FormBuilder
   ) {}
-
-  ngOnInit(): void {
-    /*
-      subscribing search term on  value changes
-    */
-    this.instantSearchSubscription = this.searchForm.valueChanges
-      .pipe(debounceTime(500), distinctUntilChanged(), takeUntil(this.destroyed$))
-      .subscribe((searchKey) => {
-        if (searchKey?.term) {
-          this.searchBooks();
-        } else {
-          this.store.dispatch(clearSearch());
-        }
-      });
-  }
-
-  /*
-    unsubscribing all the subscriptions on component destroy
-  */
-  ngOnDestroy(): void {
-   this.destroyed$.next(true);
-  }
 
   get searchTerm(): string {
     return this.searchForm.value.term;
